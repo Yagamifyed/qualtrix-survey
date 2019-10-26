@@ -17,7 +17,7 @@ footer_text = '</body>\n</html>'
 application = Flask(__name__)
 
 # add a rule for the index page.
-application.add_url_rule('/', 'index', (lambda: "placeholder"))
+application.add_url_rule('/', 'index', (lambda: "Please append /gen_numbers to generate numbers or /pop_number to receive a random, unique user id"))
 
 # prepares s3 bucket
 def getBucket():
@@ -48,6 +48,10 @@ def gen_numbers(start, end):
     bucket.put_object(Key="numbers.txt", Body=text)
     return "Generated numbers from " + start + " to " + end
 
+@application.route("/gen_numbers")
+def hint_gen_numbers():
+    return "Hint: You probably try to generate numbers. Please append at the end of your path \"/start/end\", replacing with your desired start and end range for user IDs."
+
 @application.route("/pop_number_debug")
 def pop_number():
     bucket = getBucket()
@@ -64,6 +68,8 @@ def pop_number():
     return_number = numbers[0]
     if len(numbers) > 1:
         rest = [str(x) for x in numbers[1:]]
+    else:
+        rest = []
 
     bucket.put_object(Key="numbers.txt", Body="\n".join(rest))
 
@@ -72,7 +78,7 @@ def pop_number():
 @application.route('/pop_number', methods = ['GET'])
 def api_hello():
     data = {
-        'user_id'  : pop_number,
+        'user_id'  : pop_number(),
     }
     js = json.dumps(data)
 
