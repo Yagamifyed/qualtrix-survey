@@ -36,7 +36,7 @@ def gen_numbers(start, end):
     bucket.put_object(Key="numbers.txt", Body=text)
     return "Generated numbers from " + start + " to " + end
 
-@application.route("/pop_number")
+@application.route("/pop_number_debug")
 def pop_number():
     bucket = getBucket()
     for obj in bucket.objects.all():
@@ -55,18 +55,16 @@ def pop_number():
 
     bucket.put_object(Key="numbers.txt", Body="\n".join(rest))
 
-    return "We received: " + str(return_number)
+    return str(return_number)
 
-@application.route('/get_hello', methods = ['GET'])
+@application.route('/pop_number', methods = ['GET'])
 def api_hello():
     data = {
-        'hello'  : 'world',
-        'number' : 3
+        'user_id'  : pop_number,
     }
     js = json.dumps(data)
 
     resp = Response(js, status=200, mimetype='application/json')
-    resp.headers['Link'] = 'http://luisrei.com'
 
     return resp
 
