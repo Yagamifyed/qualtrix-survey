@@ -1,12 +1,14 @@
-Status: 200
-Content-Type: application/json
-
-{
-  "employeeId":123456,
-  "firstName": "Sunit",
-  "lastName": "Parekh",
-  "gender": "Male",
-  "hireDate": "2012-01-01",
-  "birthDate": "1990-01-01",
-  "office": "Pune"
-}
+<?xml version="1.0"?>
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope">
+    <s:Header>
+        <m:RequestID xmlns:m="http://www.lecture-db.de/soap">a3f5c109b</m:RequestID>
+    </s:Header>
+    <s:Body>
+        <m:DbResponse xmlns:m="http://www.lecture-db.de/soap">
+            <m:title value="DOM, SAX und SOAP">
+                <m:Choice value="1">Arbeitsbericht Informatik</m:Choice>
+                <m:Choice value="2">Seminar XML und Datenbanken</m:Choice>
+            </m:title>
+        </m:DbResponse>
+    </s:Body>
+</s:Envelope>
