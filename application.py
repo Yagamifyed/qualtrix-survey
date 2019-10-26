@@ -1,9 +1,7 @@
 from flask import Flask, Response
+from random import shuffle
 import json
 
-# print a nice greeting.
-def say_hello(username = "World"):
-    return '<p>Hello %s!</p>\n' % username
 
 # some bits of text for the page.
 header_text = '''
@@ -19,13 +17,31 @@ footer_text = '</body>\n</html>'
 application = Flask(__name__)
 
 # add a rule for the index page.
-application.add_url_rule('/', 'index', (lambda: header_text +
-    say_hello() + instructions + footer_text))
+application.add_url_rule('/', 'index', (lambda: "placeholder"))
 
-# add a rule when the page is accessed with a name appended to the site
-# URL.
-application.add_url_rule('/<username>', 'hello', (lambda username:
-    header_text + say_hello(username) + home_link + footer_text))
+# call with start and end integer. Produces permutated array and writes it to numbers.txt file
+# includes start and end
+@application.route("/gen_numbers/<start>/<end>")
+def gen_numbers(start, end):
+    with open("numbers.txt", "w+") as file:
+        perm = list(range(int(start), int(end + 1)))
+        shuffle(perm)
+        file.write("".join([str(x) + "\n" for x in perm]))
+    return "Generated numbers from " + start + " to " + end
+
+@application.route("/pop_number")
+def pop_number():
+    with open("numbers.txt", "r+") as file:
+        number = file.readline().strip("\n")
+        rest = file.read()
+
+    # truncates to rest of file
+    with open("numbers.txt", "w+") as file:
+        file.write(rest)
+
+    if number == "":
+        return "No numbers left. Please report to the creator of the survey."
+    return "We received: " + str(number)
 
 @application.route('/get_hello', methods = ['GET'])
 def api_hello():
@@ -39,7 +55,6 @@ def api_hello():
     resp.headers['Link'] = 'http://luisrei.com'
 
     return resp
-
 
 # run the app.
 if __name__ == "__main__":
