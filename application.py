@@ -28,6 +28,18 @@ def getBucket():
 # includes start and end
 @application.route("/gen_numbers/<start>/<end>")
 def gen_numbers(start, end):
+    # sanity checks
+    # checks for abnormally large range
+    range_size = abs(int(start) - int(end)) 
+    if range_size > 10000:
+        return "Abnormally large range entered. Not generating anything."
+
+    if not int(end) > int(start):
+        return "Please enter an end number that is bigger than the starting number. Not generating anything."
+
+    if int(end) < 0 or int(start) < 0:
+        return "Please enter positive numbers. Not generating anything."
+
     bucket = getBucket()
 
     perm = list(range(int(start), int(end) + 1))
