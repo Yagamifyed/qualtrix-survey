@@ -1,7 +1,7 @@
 from flask import Flask, Response
 from random import shuffle
 import json
-
+import boto3
 
 # some bits of text for the page.
 header_text = '''
@@ -19,29 +19,43 @@ application = Flask(__name__)
 # add a rule for the index page.
 application.add_url_rule('/', 'index', (lambda: "placeholder"))
 
+# prepares s3 bucket
+def getBucket():
+    s3 = boto3.resource("s3")
+    return s3.Bucket("elasticbeanstalk-us-east-2-046856019993")
+
 # call with start and end integer. Produces permutated array and writes it to numbers.txt file
 # includes start and end
 @application.route("/gen_numbers/<start>/<end>")
 def gen_numbers(start, end):
-    with open("numbers.txt", "w+") as file:
-        perm = list(range(int(start), int(end + 1)))
-        shuffle(perm)
-        file.write("".join([str(x) + "\n" for x in perm]))
+    bucket = getBucket()
+
+    perm = list(range(int(start), int(end) + 1))
+    shuffle(perm)
+    text = "".join([str(x) + "\n" for x in perm])
+    bucket.put_object(Key="numbers.txt", Body=text)
     return "Generated numbers from " + start + " to " + end
 
 @application.route("/pop_number")
 def pop_number():
-    with open("numbers.txt", "r+") as file:
-        number = file.readline().strip("\n")
-        rest = file.read()
+    bucket = getBucket()
+    for obj in bucket.objects.all():
+        if obj.key == "numbers.txt":
+            numbers = obj.get()["Body"].read().split()
+            # aws returns us bytes
+            numbers = [int(x) for x in numbers]
 
-    # truncates to rest of file
-    with open("numbers.txt", "w+") as file:
-        file.write(rest)
 
-    if number == "":
-        return "No numbers left. Please report to the creator of the survey."
-    return "We received: " + str(number)
+    if len(numbers) == 0:
+        return "We have no numbers left. Please contact the maintainer of this survey."
+
+    return_number = numbers[0]
+    if len(numbers) > 1:
+        rest = [str(x) for x in numbers[1:]]
+
+    bucket.put_object(Key="numbers.txt", Body="\n".join(rest))
+
+    return "We received: " + str(return_number)
 
 @application.route('/get_hello', methods = ['GET'])
 def api_hello():
