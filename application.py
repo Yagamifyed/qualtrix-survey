@@ -17,9 +17,12 @@ footer_text = '</body>\n</html>'
 application = Flask(__name__)
 
 # add a rule for the index page.
-application.add_url_rule('/', 'index', (lambda: "Please append /gen_numbers to generate numbers or /pop_number to receive a random, unique user id"))
+application.add_url_rule(
+    '/', 'index', (lambda: "Please append /gen_numbers to generate numbers or /pop_number to receive a random, unique user id"))
 
 # prepares s3 bucket
+
+
 def getBucket():
     s3 = boto3.resource("s3")
     return s3.Bucket("elasticbeanstalk-us-east-2-046856019993")
@@ -30,7 +33,7 @@ def getBucket():
 def gen_numbers(start, end):
     # sanity checks
     # checks for abnormally large range
-    range_size = abs(int(start) - int(end)) 
+    range_size = abs(int(start) - int(end))
     if range_size > 10000:
         return "Abnormally large range entered. Not generating anything."
 
@@ -48,9 +51,11 @@ def gen_numbers(start, end):
     bucket.put_object(Key="numbers.txt", Body=text)
     return "Generated numbers from " + start + " to " + end
 
+
 @application.route("/gen_numbers")
 def hint_gen_numbers():
     return "Hint: You probably try to generate numbers. Please append at the end of your path \"/start/end\", replacing with your desired start and end range for user IDs."
+
 
 @application.route("/pop_number_debug")
 def pop_number():
@@ -60,7 +65,6 @@ def pop_number():
             numbers = obj.get()["Body"].read().split()
             # aws returns us bytes
             numbers = [int(x) for x in numbers]
-
 
     if len(numbers) == 0:
         return "We have no numbers left. Please contact the maintainer of this survey."
@@ -75,16 +79,18 @@ def pop_number():
 
     return str(return_number)
 
-@application.route('/pop_number', methods = ['GET'])
+
+@application.route('/pop_number', methods=['GET'])
 def api_hello():
     data = {
-        'user_id'  : pop_number(),
+        'user_id': pop_number(),
     }
     js = json.dumps(data)
 
     resp = Response(js, status=200, mimetype='application/json')
 
     return resp
+
 
 # run the app.
 if __name__ == "__main__":
