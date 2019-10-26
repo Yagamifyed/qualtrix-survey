@@ -1,4 +1,5 @@
-from flask import Flask
+from flask import Flask, Response
+import json
 
 # print a nice greeting.
 def say_hello(username = "World"):
@@ -25,6 +26,20 @@ application.add_url_rule('/', 'index', (lambda: header_text +
 # URL.
 application.add_url_rule('/<username>', 'hello', (lambda username:
     header_text + say_hello(username) + home_link + footer_text))
+
+@application.route('/get_hello', methods = ['GET'])
+def api_hello():
+    data = {
+        'hello'  : 'world',
+        'number' : 3
+    }
+    js = json.dumps(data)
+
+    resp = Response(js, status=200, mimetype='application/json')
+    resp.headers['Link'] = 'http://luisrei.com'
+
+    return resp
+
 
 # run the app.
 if __name__ == "__main__":
