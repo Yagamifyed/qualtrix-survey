@@ -3,16 +3,6 @@ from random import shuffle
 import json
 import boto3
 
-# some bits of text for the page.
-header_text = '''
-    <html>\n<head> <title>EB Flask Test</title> </head>\n<body>'''
-instructions = '''
-    <p><em>Hint</em>: This is a RESTful web service! Append a username
-    to the URL (for example: <code>/Thelonious</code>) to say hello to
-    someone specific.</p>\n'''
-home_link = '<p><a href="/">Back</a></p>\n'
-footer_text = '</body>\n</html>'
-
 # EB looks for an 'application' callable by default.
 application = Flask(__name__)
 
@@ -21,8 +11,6 @@ application.add_url_rule(
     '/', 'index', (lambda: "Please append /gen_numbers to generate numbers or /pop_number to receive a random, unique user id"))
 
 # prepares s3 bucket
-
-
 def getBucket():
     s3 = boto3.resource("s3")
     return s3.Bucket("elasticbeanstalk-us-east-2-046856019993")
@@ -49,13 +37,11 @@ def gen_numbers(start, end):
     shuffle(perm)
     text = "".join([str(x) + "\n" for x in perm])
     bucket.put_object(Key="numbers.txt", Body=text)
-    return "Generated numbers from " + start + " to " + end
-
+    return "Generated numbers from " + start + " to " + end + ". You can visit /pop_number to verify it is working (caution, this of course invalidates one id)."
 
 @application.route("/gen_numbers")
 def hint_gen_numbers():
     return "Hint: You probably try to generate numbers. Please append at the end of your path \"/start/end\", replacing with your desired start and end range for user IDs."
-
 
 @application.route("/pop_number_debug")
 def pop_number():
@@ -67,7 +53,7 @@ def pop_number():
             numbers = [int(x) for x in numbers]
 
     if len(numbers) == 0:
-        return "We have no numbers left. Please contact the maintainer of this survey."
+        return "We cannot generate valid IDs at the moment. Please contact: markus.kneer@gmail.com"
 
     return_number = numbers[0]
     if len(numbers) > 1:
@@ -79,7 +65,6 @@ def pop_number():
 
     return str(return_number)
 
-
 @application.route('/pop_number', methods=['GET'])
 def api_hello():
     data = {
@@ -90,7 +75,6 @@ def api_hello():
     resp = Response(js, status=200, mimetype='application/json')
 
     return resp
-
 
 # run the app.
 if __name__ == "__main__":
